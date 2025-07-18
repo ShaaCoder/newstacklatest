@@ -5,7 +5,43 @@ import Link from "next/link";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 
-const offers = [
+const benefits = {
+  "more-online-visibility": {
+    icon: <Star className="h-7 w-7 text-blue-600" />,
+    title: "More Online Visibility",
+    description: "Get found by more customers through SEO and modern web practices.",
+  },
+  "professional-look": {
+    icon: <Briefcase className="h-7 w-7 text-green-600" />,
+    title: "Professional Look",
+    description: "Build trust with a modern, polished website.",
+  },
+  "easy-customer-contact": {
+    icon: <Smartphone className="h-7 w-7 text-purple-600" />,
+    title: "Easy Customer Contact",
+    description: "WhatsApp, call, and social links for instant reach.",
+  },
+  "24-7-sales": {
+    icon: <ShoppingCart className="h-7 w-7 text-pink-600" />,
+    title: "24/7 Sales",
+    description: "Sell anytime with e-commerce setup.",
+  },
+  "track-performance": {
+    icon: <BarChart2 className="h-7 w-7 text-yellow-600" />,
+    title: "Track Performance",
+    description: "Analytics to measure your growth.",
+  },
+};
+
+type BenefitKey = keyof typeof benefits;
+
+const offers: {
+  slug: string;
+  icon: JSX.Element;
+  title: string;
+  description: string;
+  benefits: BenefitKey[];
+}[] = [
   {
     slug: "responsive-website-design",
     icon: <Layout className="h-10 w-10 text-blue-600" />,
@@ -57,34 +93,6 @@ const offers = [
   },
 ];
 
-const benefits = {
-  "more-online-visibility": {
-    icon: <Star className="h-7 w-7 text-blue-600" />,
-    title: "More Online Visibility",
-    description: "Get found by more customers through SEO and modern web practices.",
-  },
-  "professional-look": {
-    icon: <Briefcase className="h-7 w-7 text-green-600" />,
-    title: "Professional Look",
-    description: "Build trust with a modern, polished website.",
-  },
-  "easy-customer-contact": {
-    icon: <Smartphone className="h-7 w-7 text-purple-600" />,
-    title: "Easy Customer Contact",
-    description: "WhatsApp, call, and social links for instant reach.",
-  },
-  "24-7-sales": {
-    icon: <ShoppingCart className="h-7 w-7 text-pink-600" />,
-    title: "24/7 Sales",
-    description: "Sell anytime with e-commerce setup.",
-  },
-  "track-performance": {
-    icon: <BarChart2 className="h-7 w-7 text-yellow-600" />,
-    title: "Track Performance",
-    description: "Analytics to measure your growth.",
-  },
-};
-
 export default function OfferDetailPage({ params }: { params: { slug: string } }) {
   const offer = offers.find((o) => o.slug === params.slug);
   if (!offer) return notFound();
@@ -101,7 +109,7 @@ export default function OfferDetailPage({ params }: { params: { slug: string } }
         <section>
           <h2 className="text-2xl font-semibold mb-6 text-center">How This Helps Your Business</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {offer.benefits.map((b) => (
+            {offer.benefits.map((b: BenefitKey) => (
               <div key={b} className="bg-white rounded-xl shadow p-6 flex flex-col items-center text-center border border-gray-100">
                 {benefits[b].icon}
                 <h3 className="font-bold text-lg mt-2">{benefits[b].title}</h3>
