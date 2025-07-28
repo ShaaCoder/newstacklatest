@@ -5,14 +5,24 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Save, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { BlogPostLean } from '@/lib/types';
 
-// Use BlogPostLean for type consistency
 type BlogPost = BlogPostLean;
 
 interface BlogEditorProps {
@@ -33,6 +43,7 @@ export function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) {
     meta_title: post?.meta_title || '',
     meta_description: post?.meta_description || '',
   });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,13 +56,11 @@ export function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '');
 
-      const postData: BlogPost = {
-        id: post?.id || new Date().toISOString(), // Fallback ID for new posts
-        _id: post?._id || '',
+      const basePostData = {
         title: formData.title,
         excerpt: formData.excerpt,
         content: formData.content,
-        author: 'Admin', // Should come from authenticated user
+        author: 'Admin',
         published_at: post?.published_at || new Date(),
         category: formData.category,
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean),
@@ -64,26 +73,24 @@ export function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) {
         updated_at: new Date(),
       };
 
+      const postData: BlogPost = {
+        id: post?.id || new Date().toISOString(),
+        ...(post?._id ? { _id: post._id } : {}),
+        ...basePostData,
+      };
+
       const url = post ? `/api/admin/blog/${post.id}` : '/api/admin/blog';
       const method = post ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...postData,
-          id: undefined, // Exclude id from payload, API handles it
-          published_at: postData.published_at instanceof Date
-            ? postData.published_at.toISOString()
-            : postData.published_at,
-          created_at: postData.created_at instanceof Date
-            ? postData.created_at.toISOString()
-            : postData.created_at,
-          updated_at: postData.updated_at instanceof Date
-            ? postData.updated_at.toISOString()
-            : postData.updated_at,
+          id: undefined,
+          published_at: basePostData.published_at.toISOString(),
+          created_at: basePostData.created_at.toISOString(),
+          updated_at: basePostData.updated_at.toISOString(),
         }),
       });
 
@@ -108,10 +115,7 @@ export function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) {
   };
 
   const handleChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -147,35 +151,15 @@ export function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) {
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="title">Title *</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => handleChange('title', e.target.value)}
-                  required
-                  className="mt-1"
-                />
+                <Input id="title" value={formData.title} onChange={(e) => handleChange('title', e.target.value)} required />
               </div>
               <div>
                 <Label htmlFor="excerpt">Excerpt *</Label>
-                <Textarea
-                  id="excerpt"
-                  value={formData.excerpt}
-                  onChange={(e) => handleChange('excerpt', e.target.value)}
-                  required
-                  rows={3}
-                  className="mt-1"
-                />
+                <Textarea id="excerpt" value={formData.excerpt} onChange={(e) => handleChange('excerpt', e.target.value)} required rows={3} />
               </div>
               <div>
                 <Label htmlFor="content">Content *</Label>
-                <Textarea
-                  id="content"
-                  value={formData.content}
-                  onChange={(e) => handleChange('content', e.target.value)}
-                  required
-                  rows={15}
-                  className="mt-1"
-                />
+                <Textarea id="content" value={formData.content} onChange={(e) => handleChange('content', e.target.value)} required rows={15} />
               </div>
             </CardContent>
           </Card>
@@ -187,22 +171,11 @@ export function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) {
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="meta_title">Meta Title</Label>
-                <Input
-                  id="meta_title"
-                  value={formData.meta_title}
-                  onChange={(e) => handleChange('meta_title', e.target.value)}
-                  className="mt-1"
-                />
+                <Input id="meta_title" value={formData.meta_title} onChange={(e) => handleChange('meta_title', e.target.value)} />
               </div>
               <div>
                 <Label htmlFor="meta_description">Meta Description</Label>
-                <Textarea
-                  id="meta_description"
-                  value={formData.meta_description}
-                  onChange={(e) => handleChange('meta_description', e.target.value)}
-                  rows={3}
-                  className="mt-1"
-                />
+                <Textarea id="meta_description" value={formData.meta_description} onChange={(e) => handleChange('meta_description', e.target.value)} rows={3} />
               </div>
             </CardContent>
           </Card>
@@ -216,13 +189,7 @@ export function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label htmlFor="status">Published</Label>
-                <Switch
-                  id="status"
-                  checked={formData.status === 'published'}
-                  onCheckedChange={(checked) =>
-                    handleChange('status', checked ? 'published' : 'draft')
-                  }
-                />
+                <Switch id="status" checked={formData.status === 'published'} onCheckedChange={(checked) => handleChange('status', checked ? 'published' : 'draft')} />
               </div>
             </CardContent>
           </Card>
@@ -234,11 +201,8 @@ export function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) {
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="category">Category</Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(value) => handleChange('category', value)}
-                >
-                  <SelectTrigger className="mt-1">
+                <Select value={formData.category} onValueChange={(value) => handleChange('category', value)}>
+                  <SelectTrigger>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -252,23 +216,11 @@ export function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) {
               </div>
               <div>
                 <Label htmlFor="tags">Tags (comma-separated)</Label>
-                <Input
-                  id="tags"
-                  value={formData.tags}
-                  onChange={(e) => handleChange('tags', e.target.value)}
-                  placeholder="react, javascript, tutorial"
-                  className="mt-1"
-                />
+                <Input id="tags" value={formData.tags} onChange={(e) => handleChange('tags', e.target.value)} placeholder="react, javascript, tutorial" />
               </div>
               <div>
                 <Label htmlFor="image_url">Featured Image URL</Label>
-                <Input
-                  id="image_url"
-                  value={formData.image_url}
-                  onChange={(e) => handleChange('image_url', e.target.value)}
-                  placeholder="https://example.com/image.jpg"
-                  className="mt-1"
-                />
+                <Input id="image_url" value={formData.image_url} onChange={(e) => handleChange('image_url', e.target.value)} placeholder="https://example.com/image.jpg" />
               </div>
             </CardContent>
           </Card>
