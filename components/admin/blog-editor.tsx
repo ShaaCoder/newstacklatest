@@ -61,37 +61,41 @@ export function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) {
         excerpt: formData.excerpt,
         content: formData.content,
         author: 'Admin',
-        published_at: post?.published_at || new Date(),
+        published_at: post?.published_at ? (typeof post.published_at === 'string' ? new Date(post.published_at) : post.published_at) : new Date(),
         category: formData.category,
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean),
         image_url: formData.image_url,
         slug,
-        status: formData.status,
+        status: formData.status as 'published' | 'draft',
         meta_title: formData.meta_title,
         meta_description: formData.meta_description,
-        created_at: post?.created_at || new Date(),
+        created_at: post?.created_at ? (typeof post.created_at === 'string' ? new Date(post.created_at) : post.created_at) : new Date(),
         updated_at: new Date(),
       };
 
-      const postData: BlogPost = {
+      const postData = {
         id: post?.id || new Date().toISOString(),
-        ...(post?._id ? { _id: post._id } : {}),
+        ...(post?._id ? { _id: post._id } : {}), // Only include _id if it exists
         ...basePostData,
       };
 
       const url = post ? `/api/admin/blog/${post.id}` : '/api/admin/blog';
       const method = post ? 'PUT' : 'POST';
 
+      // Remove _id when creating a new post to let MongoDB generate it
+      const postToSend = {
+        ...postData,
+        id: undefined,
+        _id: post ? postData._id : undefined, // Only include _id for updates
+        published_at: basePostData.published_at instanceof Date ? basePostData.published_at.toISOString() : basePostData.published_at,
+        created_at: basePostData.created_at instanceof Date ? basePostData.created_at.toISOString() : basePostData.created_at,
+        updated_at: basePostData.updated_at instanceof Date ? basePostData.updated_at.toISOString() : basePostData.updated_at,
+      };
+      
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...postData,
-          id: undefined,
-          published_at: basePostData.published_at.toISOString(),
-          created_at: basePostData.created_at.toISOString(),
-          updated_at: basePostData.updated_at.toISOString(),
-        }),
+        body: JSON.stringify(postToSend),
       });
 
       if (response.ok) {
